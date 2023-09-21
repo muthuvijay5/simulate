@@ -13,6 +13,7 @@ function Lane() {
     [<Empty key="5" />, 0],
     [<Empty key="6" />, 0],
   ]);
+  const [obstaclePresent, setObstaclePresent] = useState(false);
 
   function getIndex(height) {
     return 5 - Math.floor(height / (758 / 6));
@@ -25,7 +26,7 @@ function Lane() {
       let newValue = [...oldValue];
       if (newValue[carIndex][1] === 0 || newValue[carIndex][1] === 2) {
         newValue[carIndex] = [
-          <img key={carIndex} className="car" src={CarSVG} />,
+          <img key={carIndex} className="car" src={CarSVG} alt="Car" />,
           1,
         ];
       } else {
@@ -45,11 +46,13 @@ function Lane() {
         newValue[obstacleIndex][1] === 0 ||
         newValue[obstacleIndex][1] === 1
       ) {
+        setObstaclePresent(true);
         newValue[obstacleIndex] = [
-          <img key={obstacleIndex} className="car" src={ObstacleSVG} />,
+          <img key={obstacleIndex} className="car" src={ObstacleSVG} alt="Obstacle" />,
           2,
         ];
       } else {
+        setObstaclePresent(false);
         newValue[obstacleIndex] = [<Empty key={obstacleIndex} />, 0];
       }
       return newValue;
@@ -58,10 +61,7 @@ function Lane() {
 
   return (
     <div onContextMenu={placeObstacle} onClick={placeCar} className="lane">
-      <div className="roadCenterLine">  
-      </div>
-      <div className="roadLine">  
-      </div>
+      <div className={`roadCenterLine ${obstaclePresent ? 'obstaclePresent' : ''}`}></div>
       {cars.map((value) => value[0])}
     </div>
   );

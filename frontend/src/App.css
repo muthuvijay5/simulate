@@ -47,11 +47,15 @@ body {
   animation: moveLine 3s linear infinite;
 }
 
+.roadCenterLine.obstaclePresent {
+  animation-play-state: paused;
+}
+
 @keyframes moveLine {
   0% {
     top: 0%;
   }
   100% {
-    top: 70%;
+    top: 68%;
   }
 }

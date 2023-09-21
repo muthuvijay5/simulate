@@ -1,6 +1,6 @@
 import { useState } from "react";
-import ObstacleSVG from "../obstacle.svg";
-import CarSVG from "../car.svg";
+import ObstacleSVG from "../assets/obstacle.svg";
+import CarSVG from "../assets/car.svg";
 import Empty from "./Empty";
 
 function Lane() {
@@ -11,6 +11,7 @@ function Lane() {
     [<Empty key="3" />, 0],
     [<Empty key="4" />, 0],
     [<Empty key="5" />, 0],
+    [<Empty key="6" />, 0],
   ]);
 
   function getIndex(height) {
@@ -57,6 +58,10 @@ function Lane() {
 
   return (
     <div onContextMenu={placeObstacle} onClick={placeCar} className="lane">
+      <div className="roadCenterLine">  
+      </div>
+      <div className="roadLine">  
+      </div>
       {cars.map((value) => value[0])}
     </div>
   );

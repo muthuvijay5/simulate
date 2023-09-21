@@ -1,4 +1,4 @@
-import Frame from "./assets/Components/Frame";
+import Frame from "../src/Components/Frame";
 import "./App.css";
 
 function App() {

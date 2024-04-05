@@ -317,7 +317,7 @@ res = pd.DataFrame()
 actions = []
 rewards = []
 
-action_ds = pd.read_csv("../res4.csv")["action"]
+action_ds = pd.read_csv("../res3.csv")["action"]
 
 # for i in range(100):
 for i in range(ds.shape[0]):
@@ -478,7 +478,7 @@ res["speed"] = spd
 # res.to_csv("result.csv")
 # res["action"] = actions
 # res["reward"] = rewards
-res.to_csv("spd4.csv")
+res.to_csv("spd3.csv")
 
 
 """

@@ -9,6 +9,10 @@ import matplotlib.pyplot as plt
 import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
+import os
+
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 
 def ic(x11, y11, x12, y12, x21, y21, x22, y22):
@@ -102,113 +106,6 @@ def flatten_state(state):
         idx += 1
 
     return state_tensor
-
-
-class ActorNetwork(nn.Module):
-    def __init__(self, input_size, hidden_size, num_actions):
-        super(ActorNetwork, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, num_actions)
-        self.tanh = nn.Tanh()
-
-    def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = self.tanh(self.fc2(x))  # For continuous action spaces
-        return x
-
-
-class CriticNetwork(nn.Module):
-    def __init__(self, input_size, hidden_size, num_actions):
-        super(CriticNetwork, self).__init__()
-        self.fc1 = nn.Linear(input_size + num_actions, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, 1)  # Q value
-
-    def forward(self, state, action):
-        t = None
-        try:
-            t = list(action[0])
-        except:
-            t = list(action)
-        x = torch.Tensor([list(state[0]) + t])
-        # x = torch.cat([state, action], 1)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
-
-
-class DDPGAgent:
-    def __init__(
-        self,
-        input_size,
-        num_actions,
-        learning_rate,
-        discount_factor,
-        tau,  # for soft update
-        hidden_size,
-    ):
-        self.num_actions = num_actions
-
-        # Create Actor and Critic Networks
-        self.actor_network = ActorNetwork(input_size, hidden_size, num_actions)
-        self.actor_target = ActorNetwork(input_size, hidden_size, num_actions)
-        self.actor_optimizer = optim.Adam(
-            self.actor_network.parameters(), lr=learning_rate
-        )
-
-        self.critic_network = CriticNetwork(input_size, hidden_size, num_actions)
-        self.critic_target = CriticNetwork(input_size, hidden_size, num_actions)
-        self.critic_optimizer = optim.Adam(
-            self.critic_network.parameters(), lr=learning_rate
-        )
-
-        self.discount_factor = discount_factor
-        self.tau = tau
-
-    def select_action(self, state):
-        state_tensor = torch.from_numpy(state.clone().numpy()).float().unsqueeze(0)
-        action = self.actor_network(state_tensor)
-        return action.detach().numpy()[0]
-
-    def update(self, states, actions, rewards, next_states, dones):
-        states = torch.from_numpy(states).float()
-        actions = torch.from_numpy(actions).float()
-        rewards = torch.from_numpy(rewards).float().unsqueeze(1)
-        next_states = torch.from_numpy(next_states).float()
-        dones = torch.from_numpy(dones.astype(np.uint8)).float().unsqueeze(1)
-
-        # Critic loss
-        Qvals = self.critic_network(states, actions)
-        next_actions = actions
-        next_Q = self.critic_target(next_states, next_actions)
-        Qprime = rewards + (1 - dones) * self.discount_factor * next_Q
-        critic_loss = F.mse_loss(Qvals, Qprime)
-
-        # Actor loss
-        policy_loss = -self.critic_network(states, self.actor_network(states)).mean()
-
-        # Update networks
-        self.actor_optimizer.zero_grad()
-        policy_loss.backward()
-        self.actor_optimizer.step()
-
-        self.critic_optimizer.zero_grad()
-        critic_loss.backward()
-        self.critic_optimizer.step()
-
-        # Update target networks
-        for target_param, param in zip(
-            self.actor_target.parameters(), self.actor_network.parameters()
-        ):
-            target_param.data.copy_(
-                param.data * self.tau + target_param.data * (1.0 - self.tau)
-            )
-
-        for target_param, param in zip(
-            self.critic_target.parameters(), self.critic_network.parameters()
-        ):
-            target_param.data.copy_(
-                param.data * self.tau + target_param.data * (1.0 - self.tau)
-            )
 
 
 class Environment:
